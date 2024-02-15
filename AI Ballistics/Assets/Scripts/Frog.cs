@@ -22,11 +22,15 @@ public class Frog : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space)) {
             Vector3? force = CalculateFiringSolution(transform.position, m_target.position, m_force);
-            if (force.HasValue) m_rb.AddForce(m_force * force.Value.normalized, ForceMode.VelocityChange);
+            if (force.HasValue) m_rb.AddForce(force.Value.normalized * m_force, ForceMode.VelocityChange);
         }
         else if (Input.GetKeyDown(KeyCode.R)) {
             Respawn();
         }
+    }
+    public void SetUseMin(bool useMin)
+    {
+        this.useMin = useMin;
     }
     public void Respawn()
     {
@@ -42,7 +46,7 @@ public class Frog : MonoBehaviour
         var b = -4 * (Vector3.Dot(Physics.gravity, delta) + muzzleV * muzzleV);
         var c = 4 * delta.sqrMagnitude;
 
-        var b2minus4ac = b * b - 4 * a * c;
+        var b2minus4ac = (b * b) - (4 * a * c);
         if (b2minus4ac < 0) return null;
 
         var time0 = Mathf.Sqrt((-b + Mathf.Sqrt(b2minus4ac)) / (2 * a));
@@ -66,6 +70,11 @@ public class Frog : MonoBehaviour
             else
                 timeToTarget = Mathf.Max(time0, time1);
         }
-        return ((delta * 2) - (Physics.gravity * (timeToTarget * timeToTarget)) / (2 * muzzleV * timeToTarget));
+
+        Vector3 delta2 = delta * 2;
+        Vector3 gravTtt2 = Physics.gravity * (timeToTarget * timeToTarget);
+        float divisor = 2 * muzzleV * timeToTarget;
+
+        return (delta2 - gravTtt2) / divisor;
     }
 }
